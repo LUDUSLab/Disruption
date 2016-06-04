@@ -15,7 +15,10 @@ var GameState = function()
 	var popup;
 	var cards;
 	var opts;
-	var moves;
+	var isPlay1Ready;
+	var isPlay2Ready;
+	var moves1;
+	var moves2;
 
 	function create()
 	{
@@ -25,20 +28,30 @@ var GameState = function()
 		tiles 	= game.add.group();
 		cards 	= game.add.group();
 		opts 	= game.add.group();
-		moves 	= [];
+		moves1 	= [];
 
 		createGrid();
 		createPopup();
 
 		game.add.tween(popup.scale).to({x:1,y:1},1000,Phaser.Easing.Elastic.Out, true);
-
-		//tile = game.add.sprite(0, 0, 'tile', 0);
 		
 	}
 
 	function update()
 	{
-		
+		if(_link.isPackage)
+		{
+			_link.isPackage = false;
+			moves2 = _link.getPackage();
+			isPlay2Ready = true
+		}
+
+		if(isPlay1Ready && isPlay2Ready)
+		{
+			isPlay1Ready = false;
+			isPlay2Ready = false;
+			executionMoves();
+		}
 	}
 
 	function createPopup()
@@ -97,7 +110,7 @@ var GameState = function()
 
 				card.inputEnabled = false;
 
-				moves[i] = card.move;
+				moves1[i] = card.move;
 
 				game.add.tween(card.scale).to({x:0.25,y:0.25},500,Phaser.Easing.Linear.None,true);
 				game.add.tween(card).to({x:opt.x,y:opt.y},500,Phaser.Easing.Linear.None,true);
@@ -126,6 +139,11 @@ var GameState = function()
 				tile.alpha = 0.8;
 			}
 		}
+	}
+
+	function executionMoves()
+	{
+
 	}
 
 	return {preload: preload, create: create, update: update};

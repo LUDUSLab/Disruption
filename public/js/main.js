@@ -10,6 +10,8 @@ function preload()
 	game.load.script('menu','/js/menu.js');
 	game.load.script('load','/js/load.js');
 	game.load.script('game','/js/game.js');
+
+	game.load.script('heros','/js/heros.js');
 }
 
 function create()

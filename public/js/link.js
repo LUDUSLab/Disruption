@@ -1,7 +1,9 @@
 var _link = (function()
 {
 	var socket  = io();
-	var ready = false;
+	var isReady = false;
+	var isPackage = false;
+	var package;
 	var room;
 
 	socket.on('join room', function(data)
@@ -10,33 +12,32 @@ var _link = (function()
 
 		if(data.player != socket.id)
 		{
-			ready = true;
-			console.log(ready);
+			isReady = true;
 			data.player = socket.id;
 			socket.emit('start game',data);
 		}
-
-		console.log(data);
 	});
 
 	socket.on('start game', function(data)
 	{
-		ready = true;
+		isReady = true;
 	});
 
 	socket.on('send move', function(data)
 	{
+		isPackage = true;
+		package = data;
 
 	});
+
+	function getPackage()
+	{
+		return package;
+	}
 
 	function sendMove(data)
 	{
 		socket.emit('send move',data);
-	}
-
-	function isReady()
-	{
-		return ready;
 	}
 
 	function requestRoom()
@@ -52,7 +53,9 @@ var _link = (function()
 	return	{
 				sendMove    : sendMove,
 				requestRoom	: requestRoom,
-				isReady		: isReady
+				isReady		: isReady,
+				isPackage	: isPackage,
+				getPackage	: getPackage
 			};
 
 })();
