@@ -1,14 +1,12 @@
 var _user = (function ()
 {
 	var name = 'Player';
-
-	function setName(newName)
-	{
-		name = newName;
-	}
+	var hero = 'archer';
+	var turn = 1;
 
 	return 	{
-				name 	: name,
-				setName : setName
+				name	: name,
+				turn	: turn,
+				hero	: hero
 			}
 })();
