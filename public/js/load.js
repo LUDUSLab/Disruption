@@ -15,8 +15,10 @@ function create()
 function update()
 {
 
-	if(true)
+	if(_link.isReady)
 		game.state.start('GameState');
+
+	//console.log(_link.isReady);
 }
 
 function start()

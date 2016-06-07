@@ -8,14 +8,15 @@ var _link = (function()
 
 	socket.on('join room', function(data)
 	{
-		room = data.room;
 
+		room = data.room;
 		if(data.player != socket.id)
 		{
 			isReady = true;
 			data.player = socket.id;
 			socket.emit('start game',data);
 		}
+
 	});
 
 	socket.on('start game', function(data)
@@ -27,16 +28,17 @@ var _link = (function()
 	{
 		isPackage = true;
 		package = data;
-
 	});
 
 	function getPackage()
 	{
-		return package;
+		isPackage = false;
+		return aux;
 	}
 
 	function sendMove(data)
 	{
+		data.room = room;
 		socket.emit('send move',data);
 	}
 

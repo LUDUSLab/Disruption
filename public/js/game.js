@@ -1,6 +1,6 @@
 var GameState = function()
 {
-	
+
 	function preload()
 	{
 		game.load.image('tile', '/assets/images/tile.png');
@@ -9,7 +9,7 @@ var GameState = function()
 		game.load.image('card', '/assets/images/card.png');
 		game.load.image('opt', '/assets/images/opt.png');
 		game.load.spritesheet('confirm','assets/sprites/confirm_96x32.png',96,32);
-		game.load.spritesheet('hero1','assets/sprites/'+ _user.hero+'_96x128.png',96,128);
+		game.load.spritesheet('hero1','assets/sprites/'+ _user.hero+'_96x120.png',96,120);
 	}
 
 	var tiles;
@@ -46,17 +46,7 @@ var GameState = function()
 
 		createPopup();
 
-		moves2[0] = {type : 'walk', direction : {x:-1, y:0}};
-		moves2[1] = {type : 'walk', direction : {x:0, y:1}};
-		moves2[2] = {type : 'walk', direction : {x:0, y:1}};
-
-		moves1[0] = {type : 'walk', direction : {x:1, y:0}};
-		moves1[1] = {type : 'walk', direction : {x:0, y:0}};
-		moves1[2] = {type : 'skill', skill : 0};
-
-		mergeMoves();
-
-		//game.add.tween(popup.scale).to({x:1,y:1},1000,Phaser.Easing.Elastic.Out, true);
+		game.add.tween(popup.scale).to({x:1,y:1},1000,Phaser.Easing.Elastic.Out, true);
 		
 	}
 
@@ -113,8 +103,6 @@ var GameState = function()
 			card = cards.create(x,y,'card');
 			card.anchor.set(0.5);
 
-			card.move = 
-
 			card.inputEnabled = true;
 			card.events.onInputDown.add(clickCard, this);
 		}
@@ -124,7 +112,19 @@ var GameState = function()
 		cards.getChildAt(2).move = {type : 'walk', direction : {x:0, y:-1}};//up
 		cards.getChildAt(3).move = {type : 'walk', direction : {x:-1, y:0}};//left
 
+		confirm = game.add.button(w-50, h-50, 'confirm', confirm, this, 0, 1, 2);
+		confirm.anchor.set(0.5);
+
+		popup.addChild(confirm);
+
 		popup.scale.set(0);
+	}
+
+	function confirm()
+	{
+		popup.scale.set(0);
+		isPlay1Ready = true;
+		_link.sendMove(moves1);
 	}
 
 	function clickCard(card)
@@ -174,19 +174,27 @@ var GameState = function()
 
 	function createHeros()
 	{
-		sprite = game.add.sprite(0,0,'hero1');
-		sprite.x = tiles[1][0].x;
-		sprite.y = tiles[1][0].y;
+		x = tiles[1][0].x;
+		y = tiles[1][0].y;
+		sprite = game.add.sprite(x,y,'hero1',0);
 		sprite.anchor.set(0.5,0.75);
+		sprite.animations.add('idle',[0,1,2,3],10,true);
+		sprite.animations.add('walk',[4,5,6,7],10,true);
+		sprite.animations.add('skill',[8,9,10,11],10,false);
+		sprite.animations.add('damage',[12,13,14,15],10,false);
+		sprite.animations.play('idle');
+		hero1 = {x:2, y:1, sprite};
 
-		hero1 = {x:1, y:2, sprite};
-
-		sprite = game.add.sprite(0,0,'hero1');
-		sprite.x = tiles[2][3].x;
-		sprite.y = tiles[2][3].y;
+		x = tiles[2][3].x;
+		y = tiles[2][3].y;
+		sprite = game.add.sprite(x,y,'hero1',0);
 		sprite.anchor.set(0.5,0.75);
-
-		hero2 = {x:4, y:3, sprite};
+		sprite.animations.add('idle',[0,1,2,3],10,true);
+		sprite.animations.add('walk',[4,5,6,7],10,true);
+		sprite.animations.add('skill',[8,9,10,11],10,false);
+		sprite.animations.add('damage',[12,13,14,15],10,false);
+		sprite.animations.play('idle');
+		hero2 = {x:3, y:4, sprite};
 
 		heros = {hero1,hero2};
 	}
@@ -217,6 +225,8 @@ var GameState = function()
 
 	function executionMoves()
 	{
+		hero1.sprite.animations.play('idle');
+		hero2.sprite.animations.play('idle');
 		if(moves.length == 0)
 		{
 			console.log('Fim round');
@@ -240,6 +250,7 @@ var GameState = function()
 
 					tile = tiles[hero.x - 1][hero.y - 1];
 
+					hero.sprite.animations.play('walk');
 					tween = game.add.tween(hero.sprite).to({x : tile.x, y : tile.y},1000,Phaser.Easing.Linear.None,true);
 					tween.onComplete.add(executionMoves, this);
 				break;
@@ -253,9 +264,17 @@ var GameState = function()
 						y =	hero.y + tile.y;
 
 						if((x <= 0)||(x >  4)||(y <= 0)||(y >  4)) continue;
+						
 
-						tiles[x-1][y-1].destroy();
+						tiles[x-1][y-1].tint = 0xff0000;
+
+						if(hero1.x == x && hero1.y == y)
+							hero1.sprite.animations.play('damage');
+
+						if(hero2.x == x && hero2.y == y)
+							hero2.sprite.animations.play('damage');
 					}
+				hero.sprite.animations.play('skill');
 				break;
 			}
 		}
