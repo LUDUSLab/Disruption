@@ -1,8 +1,8 @@
 var _link = (function()
 {
 	var socket  = io();
-	var isReady = false;
-	var isPackage = false;
+	var ready = false;
+	var boolPackage = false;
 	var package;
 	var room;
 
@@ -12,8 +12,9 @@ var _link = (function()
 		room = data.room;
 		if(data.player != socket.id)
 		{
-			isReady = true;
+			ready = true;
 			data.player = socket.id;
+			_user.turn = 1;
 			socket.emit('start game',data);
 		}
 
@@ -21,25 +22,42 @@ var _link = (function()
 
 	socket.on('start game', function(data)
 	{
-		isReady = true;
+		_user.turn = 2;
+		room = data.room
+		ready = true;
 	});
 
 	socket.on('send move', function(data)
 	{
-		isPackage = true;
+		boolPackage = true;
 		package = data;
 	});
 
+	function isReady()
+	{
+		return ready;
+	}
+
+	function setPackage(bool)
+	{
+		boolPackage = bool;
+	}
+
+	function isPackage()
+	{
+		return boolPackage;
+	}
+
 	function getPackage()
 	{
-		isPackage = false;
-		return aux;
+		boolPackage = false;
+		return package;
 	}
 
 	function sendMove(data)
 	{
-		data.room = room;
-		socket.emit('send move',data);
+		msg = {data:data, room:room};
+		socket.emit('send move',msg);
 	}
 
 	function requestRoom()
@@ -57,7 +75,8 @@ var _link = (function()
 				requestRoom	: requestRoom,
 				isReady		: isReady,
 				isPackage	: isPackage,
-				getPackage	: getPackage
+				getPackage	: getPackage,
+				setPackage	: setPackage
 			};
 
 })();

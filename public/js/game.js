@@ -10,6 +10,7 @@ var GameState = function()
 		game.load.image('opt', '/assets/images/opt.png');
 		game.load.spritesheet('confirm','assets/sprites/confirm_96x32.png',96,32);
 		game.load.spritesheet('hero1','assets/sprites/'+ _user.hero+'_96x120.png',96,120);
+		game.load.audio('BGMGame', 'assets/audios/BGM/_vgti by _jm.mp3');
 	}
 
 	var tiles;
@@ -30,6 +31,7 @@ var GameState = function()
 
 	function create()
 	{
+		console.log(_user.turn);
 		background = game.add.sprite(game.world.centerX, game.world.centerY, 'background');
 		background.anchor.set(0.5);
 
@@ -47,14 +49,17 @@ var GameState = function()
 		createPopup();
 
 		game.add.tween(popup.scale).to({x:1,y:1},1000,Phaser.Easing.Elastic.Out, true);
+
+		audio = game.add.audio('BGMGame');
+		audio.play("",0,1,true);
 		
 	}
 
 	function update()
 	{
-		if(_link.isPackage)
+		if(_link.isPackage())
 		{
-			_link.isPackage = false;
+			_link.setPackage(false);
 			moves2 = _link.getPackage();
 			isPlay2Ready = true
 		}
@@ -72,6 +77,7 @@ var GameState = function()
 		popup = game.add.sprite(game.world.centerX, game.world.centerY, 'popup');
 		popup.anchor.set(0.5);
 		popup.alpha = 0.9;
+		popup.z = 10;
 
 		w = (popup.width / 2);
 		h = (popup.height / 2);
@@ -166,6 +172,7 @@ var GameState = function()
 				tile = game.add.sprite(x, y, 'tile');
 				tile.anchor.set(0.5);
 				tile.alpha = 0.8;
+				tile.z = 0;
 				row[j-1] = tile;
 			}
 			tiles[i-1] = row;
@@ -178,6 +185,7 @@ var GameState = function()
 		y = tiles[1][0].y;
 		sprite = game.add.sprite(x,y,'hero1',0);
 		sprite.anchor.set(0.5,0.75);
+		sprite.z = 2;
 		sprite.animations.add('idle',[0,1,2,3],10,true);
 		sprite.animations.add('walk',[4,5,6,7],10,true);
 		sprite.animations.add('skill',[8,9,10,11],10,false);
@@ -189,12 +197,20 @@ var GameState = function()
 		y = tiles[2][3].y;
 		sprite = game.add.sprite(x,y,'hero1',0);
 		sprite.anchor.set(0.5,0.75);
+		sprite.z = 3;
 		sprite.animations.add('idle',[0,1,2,3],10,true);
 		sprite.animations.add('walk',[4,5,6,7],10,true);
 		sprite.animations.add('skill',[8,9,10,11],10,false);
 		sprite.animations.add('damage',[12,13,14,15],10,false);
 		sprite.animations.play('idle');
 		hero2 = {x:3, y:4, sprite};
+
+		if(_user.turn == 2)
+		{
+			aux = hero1;
+			hero1 = hero2;
+			hero2 = aux
+		}
 
 		heros = {hero1,hero2};
 	}
@@ -248,9 +264,13 @@ var GameState = function()
 					if(hero.y <= 0) hero.y = 1;
 					if(hero.y >  4) hero.y = 4;
 
+					
+					hero.sprite.animations.play('walk');
+
 					tile = tiles[hero.x - 1][hero.y - 1];
 
-					hero.sprite.animations.play('walk');
+					game.add.tween(hero.sprite).to({z : hero.x},1000, Phaser.Easing.Linear.None,true);
+
 					tween = game.add.tween(hero.sprite).to({x : tile.x, y : tile.y},1000,Phaser.Easing.Linear.None,true);
 					tween.onComplete.add(executionMoves, this);
 				break;

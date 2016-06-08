@@ -45,12 +45,14 @@ io.on('connection', function(socket)
 
 	socket.on('start game', function(data)
 	{
+		console.log("Start game "+data.room);
 		socket.to(data.room).emit('start game',data);
 	});
 
 	socket.on('send move', function(data)
 	{
-		socket.to(data.room).emit('send move',data);
+		console.log(socket.id+" enviou para sala "+data.room);
+		socket.to(data.room).emit('send move',data.data);
 	});
 
 	socket.on('disconnect', function(msg)
