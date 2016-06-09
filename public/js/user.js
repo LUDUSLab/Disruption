@@ -1,7 +1,7 @@
 var _user = (function ()
 {
 	var name = 'Player';
-	var hero = 'archer';
+	var hero = 'steve';
 	var turn = 1;
 
 	return 	{

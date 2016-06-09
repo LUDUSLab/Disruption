@@ -6,10 +6,13 @@ var GameState = function()
 		game.load.image('tile', '/assets/images/tile.png');
 		game.load.image('background', '/assets/images/background.png');
 		game.load.image('popup', '/assets/images/popup.png');
-		game.load.image('card', '/assets/images/card.png');
 		game.load.image('opt', '/assets/images/opt.png');
+		game.load.image('hero1', '/assets/images/steve.png');
+		game.load.image('hero2', '/assets/images/dcat.png');
+		game.load.spritesheet('cardsMoves', '/assets/sprites/cards_110x165.png',110,165);
 		game.load.spritesheet('confirm','assets/sprites/confirm_96x32.png',96,32);
-		game.load.spritesheet('hero1','assets/sprites/'+ _user.hero+'_96x120.png',96,120);
+		game.load.spritesheet('torch','assets/sprites/torch_13x55.png',13,55);
+		game.load.spritesheet('cardsSkill','assets/sprites/cards_'+ _user.hero+'_110x165',110,165);
 		game.load.audio('BGMGame', 'assets/audios/BGM/_vgti by _jm.mp3');
 	}
 
@@ -35,6 +38,20 @@ var GameState = function()
 		background = game.add.sprite(game.world.centerX, game.world.centerY, 'background');
 		background.anchor.set(0.5);
 
+		x = game.world.centerX + 100;
+		y = game.world.height * 0.30;
+		torch = game.add.sprite(x,y,'torch');
+		torch.anchor.set(0.5);
+		torch.animations.add('idle',[0,1],10,true);
+		torch.animations.play('idle');
+
+		x = game.world.centerX - 100;
+		y = game.world.height * 0.30;
+		torch = game.add.sprite(x,y,'torch');
+		torch.anchor.set(0.5);
+		torch.animations.add('idle',[0,1],10,true);
+		torch.animations.play('idle');
+
 		cards 	= game.add.group();
 		opts 	= game.add.group();
 
@@ -48,7 +65,7 @@ var GameState = function()
 
 		createPopup();
 
-		game.add.tween(popup.scale).to({x:1,y:1},1000,Phaser.Easing.Elastic.Out, true);
+		openPopup();
 
 		audio = game.add.audio('BGMGame');
 		audio.play("",0,1,true);
@@ -70,6 +87,12 @@ var GameState = function()
 			isPlay2Ready = false;
 			mergeMoves();
 		}
+	}
+
+	function openPopup()
+	{
+		opts.setAllChildren('selected',false);
+		game.add.tween(popup.scale).to({x:1,y:1},1000,Phaser.Easing.Elastic.Out, true);
 	}
 
 	function createPopup()
@@ -103,20 +126,39 @@ var GameState = function()
 
 		for(i = 1; i <= 4; i++)
 		{
-			x = - w + (i * (110 + 10)) ;
+			x = - w + (i * (110 + 10));
 			y = - h + 90;
 
-			card = cards.create(x,y,'card');
+			card = cards.create(x,y,'cardsMoves',i-1);
+			card.origin = {x:x,y:y};
 			card.anchor.set(0.5);
 
 			card.inputEnabled = true;
 			card.events.onInputDown.add(clickCard, this);
 		}
 
-		cards.getChildAt(0).move = {type : 'walk', direction : {x:1, y:0}};//right
-		cards.getChildAt(1).move = {type : 'walk', direction : {x:0, y:1}};//down
-		cards.getChildAt(2).move = {type : 'walk', direction : {x:0, y:-1}};//up
-		cards.getChildAt(3).move = {type : 'walk', direction : {x:-1, y:0}};//left
+		cards.getChildAt(0).move = {type : 'walk', direction : {x:0, y:1}};//right
+		cards.getChildAt(1).move = {type : 'walk', direction : {x:-1, y:0}};//down
+		cards.getChildAt(2).move = {type : 'walk', direction : {x:1, y:0}};//up
+		cards.getChildAt(3).move = {type : 'walk', direction : {x:0, y:-1}};//left
+
+		for(i = 1; i <= 4; i++)
+		{
+			x = - w + (i * (110 + 10));
+			y = - h + 200;
+
+			card = cards.create(x,y,'cardsSkill',i-1);
+			card.origin = {x:x,y:y};
+			card.anchor.set(0.5);
+
+			card.inputEnabled = true;
+			card.events.onInputDown.add(clickCard, this);
+		}
+
+		cards.getChildAt(4).move = {type : 'skill', direction : 'right', id : 0};
+		cards.getChildAt(5).move = {type : 'skill', direction : 'right', id : 1};
+		cards.getChildAt(6).move = {type : 'skill', direction : 'right', id : 2};
+		cards.getChildAt(7).move = {type : 'skill', direction : 'right', id : 3};
 
 		confirm = game.add.button(w-50, h-50, 'confirm', confirm, this, 0, 1, 2);
 		confirm.anchor.set(0.5);
@@ -128,9 +170,22 @@ var GameState = function()
 
 	function confirm()
 	{
-		popup.scale.set(0);
-		isPlay1Ready = true;
-		_link.sendMove(moves1);
+		if(opts.getChildAt(2).selected)
+		{
+			popup.scale.set(0);
+			isPlay1Ready = true;
+
+			for(i = 0; i < cards.length; i++)
+			{
+				card = cards.getChildAt(i);
+				card.x = card.origin.x;
+				card.y = card.origin.y;
+				card.inputEnabled = true;
+				card.scale.set(1);
+			}
+
+			_link.sendMove(moves1);
+		}
 	}
 
 	function clickCard(card)
@@ -183,26 +238,28 @@ var GameState = function()
 	{
 		x = tiles[1][0].x;
 		y = tiles[1][0].y;
-		sprite = game.add.sprite(x,y,'hero1',0);
+		sprite = game.add.sprite(x,y,'hero1');
+		sprite.scale.setTo(0.5,0.5);
 		sprite.anchor.set(0.5,0.75);
 		sprite.z = 2;
-		sprite.animations.add('idle',[0,1,2,3],10,true);
-		sprite.animations.add('walk',[4,5,6,7],10,true);
-		sprite.animations.add('skill',[8,9,10,11],10,false);
-		sprite.animations.add('damage',[12,13,14,15],10,false);
-		sprite.animations.play('idle');
+		//sprite.animations.add('idle',[0,1,2,3],10,true);
+		//sprite.animations.add('walk',[4,5,6,7],10,true);
+		//sprite.animations.add('skill',[8,9,10,11],10,false);
+		//sprite.animations.add('damage',[12,13,14,15],10,false);
+		//sprite.animations.play('idle');
 		hero1 = {x:2, y:1, sprite};
 
 		x = tiles[2][3].x;
 		y = tiles[2][3].y;
-		sprite = game.add.sprite(x,y,'hero1',0);
+		sprite = game.add.sprite(x,y,'hero2');
+		sprite.scale.setTo(0.5,0.5);
 		sprite.anchor.set(0.5,0.75);
 		sprite.z = 3;
-		sprite.animations.add('idle',[0,1,2,3],10,true);
-		sprite.animations.add('walk',[4,5,6,7],10,true);
-		sprite.animations.add('skill',[8,9,10,11],10,false);
-		sprite.animations.add('damage',[12,13,14,15],10,false);
-		sprite.animations.play('idle');
+		//sprite.animations.add('idle',[0,1,2,3],10,true);
+		//sprite.animations.add('walk',[4,5,6,7],10,true);
+		//sprite.animations.add('skill',[8,9,10,11],10,false);
+		//sprite.animations.add('damage',[12,13,14,15],10,false);
+		//sprite.animations.play('idle');
 		hero2 = {x:3, y:4, sprite};
 
 		if(_user.turn == 2)
@@ -241,11 +298,11 @@ var GameState = function()
 
 	function executionMoves()
 	{
-		hero1.sprite.animations.play('idle');
-		hero2.sprite.animations.play('idle');
+		//hero1.sprite.animations.play('idle');
+		//hero2.sprite.animations.play('idle');
 		if(moves.length == 0)
 		{
-			console.log('Fim round');
+			openPopup();
 		}
 		else
 		{
@@ -265,7 +322,7 @@ var GameState = function()
 					if(hero.y >  4) hero.y = 4;
 
 					
-					hero.sprite.animations.play('walk');
+					//hero.sprite.animations.play('walk');
 
 					tile = tiles[hero.x - 1][hero.y - 1];
 
@@ -275,7 +332,7 @@ var GameState = function()
 					tween.onComplete.add(executionMoves, this);
 				break;
 				case 'skill' :
-				listTiles = _heros.archer.skills[move.skill].tiles;
+					listTiles = _heros.["steve"].skills[move.skill].tiles;
 					for(i = 0; i < listTiles.length; i++)
 					{
 						tile = listTiles[i];
@@ -289,12 +346,16 @@ var GameState = function()
 						tiles[x-1][y-1].tint = 0xff0000;
 
 						if(hero1.x == x && hero1.y == y)
-							hero1.sprite.animations.play('damage');
+						{
+							//hero1.sprite.animations.play('damage');
+						}
 
 						if(hero2.x == x && hero2.y == y)
-							hero2.sprite.animations.play('damage');
+						{
+							//hero2.sprite.animations.play('damage');
+						}
 					}
-				hero.sprite.animations.play('skill');
+					hero.sprite.animations.play('skill');
 				break;
 			}
 		}
