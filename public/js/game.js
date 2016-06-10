@@ -7,12 +7,12 @@ var GameState = function()
 		game.load.image('background', '/assets/images/background.png');
 		game.load.image('popup', '/assets/images/popup.png');
 		game.load.image('opt', '/assets/images/opt.png');
-		game.load.image('hero1', '/assets/images/steve.png');
-		game.load.image('hero2', '/assets/images/dcat.png');
+		game.load.spritesheet('hero1', '/assets/sprites/steve_500x500.png',500,500);
+		game.load.spritesheet('hero2', '/assets/sprites/dcat_500x500.png',500,500);
 		game.load.spritesheet('cardsMoves', '/assets/sprites/cards_110x165.png',110,165);
 		game.load.spritesheet('confirm','assets/sprites/confirm_96x32.png',96,32);
 		game.load.spritesheet('torch','assets/sprites/torch_13x55.png',13,55);
-		game.load.spritesheet('cardsSkill','assets/sprites/cards_'+ _user.hero+'_110x165',110,165);
+		game.load.spritesheet('cardsSkill','assets/sprites/cards_'+_user.hero+'_110x165.png',110,165);
 		game.load.audio('BGMGame', 'assets/audios/BGM/_vgti by _jm.mp3');
 	}
 
@@ -68,7 +68,7 @@ var GameState = function()
 		openPopup();
 
 		audio = game.add.audio('BGMGame');
-		audio.play("",0,1,true);
+		audio.play('',0,1,true);
 		
 	}
 
@@ -138,14 +138,14 @@ var GameState = function()
 		}
 
 		cards.getChildAt(0).move = {type : 'walk', direction : {x:0, y:1}};//right
-		cards.getChildAt(1).move = {type : 'walk', direction : {x:-1, y:0}};//down
-		cards.getChildAt(2).move = {type : 'walk', direction : {x:1, y:0}};//up
+		cards.getChildAt(1).move = {type : 'walk', direction : {x:1, y:0}};//down
+		cards.getChildAt(2).move = {type : 'walk', direction : {x:-1, y:0}};//up
 		cards.getChildAt(3).move = {type : 'walk', direction : {x:0, y:-1}};//left
 
 		for(i = 1; i <= 4; i++)
 		{
 			x = - w + (i * (110 + 10));
-			y = - h + 200;
+			y = - h + 300;
 
 			card = cards.create(x,y,'cardsSkill',i-1);
 			card.origin = {x:x,y:y};
@@ -155,10 +155,10 @@ var GameState = function()
 			card.events.onInputDown.add(clickCard, this);
 		}
 
-		cards.getChildAt(4).move = {type : 'skill', direction : 'right', id : 0};
-		cards.getChildAt(5).move = {type : 'skill', direction : 'right', id : 1};
-		cards.getChildAt(6).move = {type : 'skill', direction : 'right', id : 2};
-		cards.getChildAt(7).move = {type : 'skill', direction : 'right', id : 3};
+		cards.getChildAt(4).move = {type : 'skill', direction : 'right', name : _user.hero, skill : 0};
+		cards.getChildAt(5).move = {type : 'skill', direction : 'right', name : _user.hero, skill : 1};
+		cards.getChildAt(6).move = {type : 'skill', direction : 'right', name : _user.hero, skill : 2};
+		cards.getChildAt(7).move = {type : 'skill', direction : 'right', name : _user.hero, skill : 3};
 
 		confirm = game.add.button(w-50, h-50, 'confirm', confirm, this, 0, 1, 2);
 		confirm.anchor.set(0.5);
@@ -201,8 +201,8 @@ var GameState = function()
 
 				moves1[i] = card.move;
 
-				game.add.tween(card.scale).to({x:0.25,y:0.25},500,Phaser.Easing.Linear.None,true);
-				game.add.tween(card).to({x:opt.x,y:opt.y},500,Phaser.Easing.Linear.None,true);
+				game.add.tween(card.scale).to({x:0.25,y:0.25}, Phaser.Timer.SECOND * 0.5, Phaser.Easing.Linear.None, true);
+				game.add.tween(card).to({x:opt.x,y:opt.y}, Phaser.Timer.SECOND * 0.5, Phaser.Easing.Linear.None, true);
 
 				break;
 			}
@@ -242,11 +242,11 @@ var GameState = function()
 		sprite.scale.setTo(0.5,0.5);
 		sprite.anchor.set(0.5,0.75);
 		sprite.z = 2;
-		//sprite.animations.add('idle',[0,1,2,3],10,true);
+		sprite.animations.add('idle',[0],10,true);
 		//sprite.animations.add('walk',[4,5,6,7],10,true);
-		//sprite.animations.add('skill',[8,9,10,11],10,false);
-		//sprite.animations.add('damage',[12,13,14,15],10,false);
-		//sprite.animations.play('idle');
+		sprite.animations.add('skill',[1],10,false);
+		sprite.animations.add('damage',[0,2,0,2,0,2,0,2,0],10,false);
+		sprite.animations.play('idle');
 		hero1 = {x:2, y:1, sprite};
 
 		x = tiles[2][3].x;
@@ -255,11 +255,11 @@ var GameState = function()
 		sprite.scale.setTo(0.5,0.5);
 		sprite.anchor.set(0.5,0.75);
 		sprite.z = 3;
-		//sprite.animations.add('idle',[0,1,2,3],10,true);
+		sprite.animations.add('idle',[0],10,true);
 		//sprite.animations.add('walk',[4,5,6,7],10,true);
-		//sprite.animations.add('skill',[8,9,10,11],10,false);
-		//sprite.animations.add('damage',[12,13,14,15],10,false);
-		//sprite.animations.play('idle');
+		sprite.animations.add('skill',[1],10,false);
+		sprite.animations.add('damage',[0,2,0,2,0,2,0,2,0],10,false);
+		sprite.animations.play('idle');
 		hero2 = {x:3, y:4, sprite};
 
 		if(_user.turn == 2)
@@ -298,8 +298,15 @@ var GameState = function()
 
 	function executionMoves()
 	{
-		//hero1.sprite.animations.play('idle');
-		//hero2.sprite.animations.play('idle');
+		hero1.sprite.animations.play('idle');
+		hero2.sprite.animations.play('idle');
+		
+		for(i = 0; i < tiles.length; i++)
+		{
+			tiles[i].tint = 0xffffff;
+			console.log(tiles[i]);
+		}
+
 		if(moves.length == 0)
 		{
 			openPopup();
@@ -326,13 +333,13 @@ var GameState = function()
 
 					tile = tiles[hero.x - 1][hero.y - 1];
 
-					game.add.tween(hero.sprite).to({z : hero.x},1000, Phaser.Easing.Linear.None,true);
+					game.add.tween(hero.sprite).to({z : hero.x}, Phaser.Timer.SECOND * 1, Phaser.Easing.Linear.None,true);
 
-					tween = game.add.tween(hero.sprite).to({x : tile.x, y : tile.y},1000,Phaser.Easing.Linear.None,true);
+					tween = game.add.tween(hero.sprite).to({x : tile.x, y : tile.y},Phaser.Timer.SECOND * 1,Phaser.Easing.Linear.None,true);
 					tween.onComplete.add(executionMoves, this);
 				break;
 				case 'skill' :
-					listTiles = _heros.["steve"].skills[move.skill].tiles;
+					listTiles = _heros[move.name].skills[move.skill].tiles;
 					for(i = 0; i < listTiles.length; i++)
 					{
 						tile = listTiles[i];
@@ -347,18 +354,25 @@ var GameState = function()
 
 						if(hero1.x == x && hero1.y == y)
 						{
-							//hero1.sprite.animations.play('damage');
+							damageHero('hero1');
 						}
 
 						if(hero2.x == x && hero2.y == y)
 						{
-							//hero2.sprite.animations.play('damage');
+							damageHero('hero2');
 						}
 					}
 					hero.sprite.animations.play('skill');
+
+					game.time.events.add(Phaser.Timer.SECOND * 2, executionMoves, this);
 				break;
 			}
 		}
+	}
+
+	function damageHero(hero)
+	{
+		heros[hero].sprite.animations.play('damage');
 	}
 
 	return {preload: preload, create: create, update: update};
