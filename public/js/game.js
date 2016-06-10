@@ -3,10 +3,11 @@ var GameState = function()
 
 	function preload()
 	{
-		game.load.image('tile', '/assets/images/tile.png');
 		game.load.image('background', '/assets/images/background.png');
 		game.load.image('popup', '/assets/images/popup.png');
 		game.load.image('opt', '/assets/images/opt.png');
+		game.load.image('life', '/assets/images/life.png');
+		game.load.spritesheet('tile', '/assets/sprites/tile_128x64.png', 128, 64);
 		game.load.spritesheet('hero1', '/assets/sprites/steve_500x500.png',500,500);
 		game.load.spritesheet('hero2', '/assets/sprites/dcat_500x500.png',500,500);
 		game.load.spritesheet('cardsMoves', '/assets/sprites/cards_110x165.png',110,165);
@@ -15,6 +16,12 @@ var GameState = function()
 		game.load.spritesheet('cardsSkill','assets/sprites/cards_'+_user.hero+'_110x165.png',110,165);
 		game.load.audio('BGMGame', 'assets/audios/BGM/_vgti by _jm.mp3');
 	}
+
+	var lifeBar1;
+	var lifeBar2;
+
+	var life1;
+	var life2;
 
 	var tiles;
 
@@ -34,7 +41,6 @@ var GameState = function()
 
 	function create()
 	{
-		console.log(_user.turn);
 		background = game.add.sprite(game.world.centerX, game.world.centerY, 'background');
 		background.anchor.set(0.5);
 
@@ -60,6 +66,8 @@ var GameState = function()
 		moves2	= [];
 		moves 	= [];
 
+		createHud();
+
 		createGrid();		
 		createHeros();
 
@@ -67,8 +75,8 @@ var GameState = function()
 
 		openPopup();
 
-		audio = game.add.audio('BGMGame');
-		audio.play('',0,1,true);
+		//audio = game.add.audio('BGMGame');
+		//audio.play('',0,1,true);
 		
 	}
 
@@ -87,12 +95,49 @@ var GameState = function()
 			isPlay2Ready = false;
 			mergeMoves();
 		}
+
+		lifeBar1.updateCrop();
+		lifeBar2.updateCrop();
 	}
 
 	function openPopup()
 	{
 		opts.setAllChildren('selected',false);
-		game.add.tween(popup.scale).to({x:1,y:1},1000,Phaser.Easing.Elastic.Out, true);
+		game.add.tween(popup.scale).to({x:1,y:1},Phaser.Timer.SECOND * 1,Phaser.Easing.Elastic.Out, true);
+	}
+
+	function createHud()
+	{
+		lifeBar1 = game.add.sprite(20 , 20, 'life');
+		lifeBar1.anchor.set(0,0.5);
+		life1 = 100;
+
+		cropRect = new Phaser.Rectangle(0, 0, 0, lifeBar1.height);
+
+		game.add.tween(cropRect).to( { width: lifeBar1.width }, Phaser.Timer.SECOND * 3,  Phaser.Easing.Linear.None, true);
+
+    	lifeBar1.crop(cropRect);
+
+    	lifeBar2 = game.add.sprite(game.world.width - 20 ,20, 'life');
+		lifeBar2.anchor.set(1,0.5);
+		life2 = 100;
+
+		cropRect = new Phaser.Rectangle(0, 0, 0, lifeBar2.height);
+
+		game.add.tween(cropRect).to( { width: lifeBar2.width }, Phaser.Timer.SECOND * 3,  Phaser.Easing.Linear.None, true);
+
+    	lifeBar2.crop(cropRect);
+
+    	if(_user.turn == 2)
+    	{
+    		aux = lifeBar1;
+    		lifeBar1 = lifeBar2;
+    		lifeBar2 = aux;
+
+    		aux = life1;
+    		life1 = life2;
+    		life2 = aux;
+    	}
 	}
 
 	function createPopup()
@@ -124,12 +169,12 @@ var GameState = function()
 
 		popup.addChild(cards);
 
-		for(i = 1; i <= 4; i++)
+		for(i = 0; i < 4; i++)
 		{
-			x = - w + (i * (110 + 10));
+			x = - w + ((i+1) * (110 + 10));
 			y = - h + 90;
 
-			card = cards.create(x,y,'cardsMoves',i-1);
+			card = cards.create(x,y,'cardsMoves',i);
 			card.origin = {x:x,y:y};
 			card.anchor.set(0.5);
 
@@ -142,14 +187,18 @@ var GameState = function()
 		cards.getChildAt(2).move = {type : 'walk', direction : {x:-1, y:0}};//up
 		cards.getChildAt(3).move = {type : 'walk', direction : {x:0, y:-1}};//left
 
-		for(i = 1; i <= 4; i++)
+		for(i = 0; i < 4; i++)
 		{
-			x = - w + (i * (110 + 10));
+			x = - w + ((i + 1)* (110 + 10));
 			y = - h + 300;
 
-			card = cards.create(x,y,'cardsSkill',i-1);
+			card = cards.create(x,y,'cardsSkill',i);
 			card.origin = {x:x,y:y};
 			card.anchor.set(0.5);
+
+			aux = (i * 2);
+			card.animations.add('idle',[aux,aux+1],10,true);
+			card.animations.play('idle');
 
 			card.inputEnabled = true;
 			card.events.onInputDown.add(clickCard, this);
@@ -226,8 +275,11 @@ var GameState = function()
 
 				tile = game.add.sprite(x, y, 'tile');
 				tile.anchor.set(0.5);
-				tile.alpha = 0.8;
 				tile.z = 0;
+
+				tile.animations.add('idle', [0], 10, false);
+				tile.animations.add('selected', [1], 10, false);
+
 				row[j-1] = tile;
 			}
 			tiles[i-1] = row;
@@ -300,11 +352,13 @@ var GameState = function()
 	{
 		hero1.sprite.animations.play('idle');
 		hero2.sprite.animations.play('idle');
-		
+
 		for(i = 0; i < tiles.length; i++)
 		{
-			tiles[i].tint = 0xffffff;
-			console.log(tiles[i]);
+			for(j = 0; j < tiles[i].length; j++)
+			{
+				tiles[i][j].animations.play('idle');
+			}
 		}
 
 		if(moves.length == 0)
@@ -350,29 +404,40 @@ var GameState = function()
 						if((x <= 0)||(x >  4)||(y <= 0)||(y >  4)) continue;
 						
 
-						tiles[x-1][y-1].tint = 0xff0000;
+						tiles[x-1][y-1].animations.play('selected');
 
 						if(hero1.x == x && hero1.y == y)
 						{
-							damageHero('hero1');
+							life1 = life1 - _heros[move.name].skills[move.skill].damage;
+							if(life1 < 0) life1 = 0;
+							damageHero('hero1', lifeBar1, life1);
 						}
 
 						if(hero2.x == x && hero2.y == y)
 						{
-							damageHero('hero2');
+							life2 = life2 - _heros[move.name].skills[move.skill].damage;
+							if(life2 < 0) life2 = 0;
+							damageHero('hero2', lifeBar2, life2);
 						}
 					}
 					hero.sprite.animations.play('skill');
-
-					game.time.events.add(Phaser.Timer.SECOND * 2, executionMoves, this);
+					if(life1 == 0 || life2 == 0)
+						0;
+					else
+						game.time.events.add(Phaser.Timer.SECOND * 3, executionMoves, this);
 				break;
 			}
 		}
 	}
 
-	function damageHero(hero)
+	function damageHero(hero, obj, dmg)
 	{
 		heros[hero].sprite.animations.play('damage');
+
+		cropRect = new Phaser.Rectangle(0, 0, obj.width, obj.height);
+		game.add.tween(cropRect).to( { width: obj.width * (dmg/100) }, Phaser.Timer.SECOND * 1,  Phaser.Easing.Linear.None, true);
+
+		obj.crop(cropRect);
 	}
 
 	return {preload: preload, create: create, update: update};
