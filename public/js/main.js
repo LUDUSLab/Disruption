@@ -7,11 +7,11 @@ function preload()
 	game.load.script('link','/js/link.js');
 	game.load.script('user','/js/user.js');
 
+	game.load.script('heros','/js/heros.js');
+
 	game.load.script('menu','/js/menu.js');
 	game.load.script('load','/js/load.js');
 	game.load.script('game','/js/game.js');
-
-	game.load.script('heros','/js/heros.js');
 }
 
 function create()

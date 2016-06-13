@@ -14,6 +14,7 @@ var GameState = function()
 		game.load.spritesheet('confirm','assets/sprites/confirm_96x32.png',96,32);
 		game.load.spritesheet('torch','assets/sprites/torch_13x55.png',13,55);
 		game.load.spritesheet('cardsSkill','assets/sprites/cards_'+_user.hero+'_110x165.png',110,165);
+		game.load.spritesheet('directions','assets/sprites/directions_32x32.png',32,32);
 		game.load.audio('BGMGame', 'assets/audios/BGM/_vgti by _jm.mp3');
 	}
 
@@ -38,6 +39,11 @@ var GameState = function()
 	var moves1;
 	var moves2;
 	var moves;
+
+	var rightArrow;
+	var downArrow;
+	var upArrow;
+	var leftrrow;
 
 	function create()
 	{
@@ -239,6 +245,11 @@ var GameState = function()
 
 	function clickCard(card)
 	{
+		selectCard(card);
+	}
+
+	function selectCard(card)
+	{
 		for(i = 0; i < 3; i++)
 		{
 			if(!opts.getChildAt(i).selected)
@@ -275,6 +286,7 @@ var GameState = function()
 
 				tile = game.add.sprite(x, y, 'tile');
 				tile.anchor.set(0.5);
+				tile.empty = true;
 				tile.z = 0;
 
 				tile.animations.add('idle', [0], 10, false);
@@ -373,21 +385,35 @@ var GameState = function()
 			switch(move.type)
 			{
 				case 'walk' :
-					hero.x = move.direction.x + hero.x;
-					hero.y = move.direction.y + hero.y;
 
-					if(hero.x <= 0) hero.x = 1;
-					if(hero.x >  4) hero.x = 4;
+					x = move.direction.x + hero.x;
+					y = move.direction.y + hero.y;
 
-					if(hero.y <= 0) hero.y = 1;
-					if(hero.y >  4) hero.y = 4;
+					if(x <= 0) x = 1;
+					if(x >  4) x = 4;
+
+					if(y <= 0) y = 1;
+					if(y >  4) y = 4;
 
 					
 					//hero.sprite.animations.play('walk');
 
-					tile = tiles[hero.x - 1][hero.y - 1];
+					tile = tiles[x - 1][y - 1];
+					if(!tile.empty)
+					{
+						x = hero.x;
+						y = hero.y;
+						tile = tiles[hero.x -1][hero.y -1];
+					}
+					else
+					{
+						tile.empty = false;
+						tiles[hero.x - 1][hero.y - 1].empty = true;
+					}
+					hero.x = x;
+					hero.y = y;
 
-					game.add.tween(hero.sprite).to({z : hero.x}, Phaser.Timer.SECOND * 1, Phaser.Easing.Linear.None,true);
+					game.add.tween(hero.sprite).to({z : x}, Phaser.Timer.SECOND * 1, Phaser.Easing.Linear.None,true);
 
 					tween = game.add.tween(hero.sprite).to({x : tile.x, y : tile.y},Phaser.Timer.SECOND * 1,Phaser.Easing.Linear.None,true);
 					tween.onComplete.add(executionMoves, this);
