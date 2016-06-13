@@ -40,10 +40,7 @@ var GameState = function()
 	var moves2;
 	var moves;
 
-	var rightArrow;
-	var downArrow;
-	var upArrow;
-	var leftrrow;
+	var arrows;
 
 	function create()
 	{
@@ -66,6 +63,7 @@ var GameState = function()
 
 		cards 	= game.add.group();
 		opts 	= game.add.group();
+		arrows	= game.add.group();
 
 		tiles 	= [];
 		moves1 	= [];
@@ -208,6 +206,7 @@ var GameState = function()
 
 			card.inputEnabled = true;
 			card.events.onInputDown.add(clickCard, this);
+			card.input.priorityID = 0;
 		}
 
 		cards.getChildAt(4).move = {type : 'skill', direction : 'right', name : _user.hero, skill : 0};
@@ -219,6 +218,37 @@ var GameState = function()
 		confirm.anchor.set(0.5);
 
 		popup.addChild(confirm);
+
+		popup.addChild(arrows);
+	
+		arrows.x = 0;
+		arrows.y = 0;
+
+		arrow = arrows.create(32,0, 'directions',0);
+		arrow.direction = 'right';
+		arrow.inputEnabled = true;
+		arrow.input.priorityID = 1;
+		arrow.anchor.set(0.5);
+		
+		arrow = arrows.create(0,32, 'directions',1);
+		arrow.direction = 'down';
+		arrow.inputEnabled = true;
+		arrow.input.priorityID = 1;
+		arrow.anchor.set(0.5);
+
+		arrow = arrows.create(0,-32, 'directions',2);
+		arrow.direction = 'up';
+		arrow.inputEnabled = true;
+		arrow.input.priorityID = 1;
+		arrow.anchor.set(0.5);
+
+		arrow = arrows.create(-32,0, 'directions',3);
+		arrow.direction = 'left';
+		arrow.inputEnabled = true;
+		arrow.input.priorityID = 1;
+		arrow.anchor.set(0.5);
+
+		arrows.scale.set(0);
 
 		popup.scale.set(0);
 	}
@@ -245,10 +275,27 @@ var GameState = function()
 
 	function clickCard(card)
 	{
-		selectCard(card);
+		console.log("aff");
+		if(card.move.type == 'walk')
+		{
+			selectCard(null,null,card);
+		}
+		else
+		{
+			arrows.scale.set(1);
+			arrows.x = card.x;
+			arrows.y = card.y;
+			arrows.callAll('events.onInputDown.removeAll','events.onInputDown');
+
+			for(i = 0; i < 4; i++)
+			{
+				arrow = arrows.getChildAt(i);
+				arrow.events.onInputDown.add(selectCard, this, 1, card);
+			}
+		}
 	}
 
-	function selectCard(card)
+	function selectCard(arrow,var1,card)
 	{
 		for(i = 0; i < 3; i++)
 		{
@@ -257,7 +304,11 @@ var GameState = function()
 				opt = opts.getChildAt(i);
 				opt.selected = true;
 
+				arrows.scale.set(0);
 				card.inputEnabled = false;
+
+				if(card.move.type != 'walk')
+					card.move.direction = arrow.direction;
 
 				moves1[i] = card.move;
 
@@ -424,8 +475,29 @@ var GameState = function()
 					{
 						tile = listTiles[i];
 
-						x = hero.x + tile.x;
-						y =	hero.y + tile.y;
+						a = tile.x;
+						b = tile.y;
+
+						if(move.direction == 'down')
+						{
+							aux = a;
+							a = b;
+							b = -aux;
+						}
+						else if(move.direction == 'up')
+						{
+							aux = a;
+							a = -b;
+							b = aux;
+						}
+						else if(move.direction == 'left')
+						{
+							a = -a;
+							b = -b;
+						}
+
+						x = hero.x + a;
+						y =	hero.y + b;
 
 						if((x <= 0)||(x >  4)||(y <= 0)||(y >  4)) continue;
 						
