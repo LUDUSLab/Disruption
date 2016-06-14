@@ -7,11 +7,16 @@ var GameState = function()
 		game.load.image('popup', '/assets/images/popup.png');
 		game.load.image('opt', '/assets/images/opt.png');
 		game.load.image('life', '/assets/images/life.png');
+		game.load.image('avatar1', '/assets/images/avatar_steve.png');
+		game.load.image('avatar2', '/assets/images/avatar_dcat.png');
 		game.load.spritesheet('tile', '/assets/sprites/tile_128x64.png', 128, 64);
 		game.load.spritesheet('hero1', '/assets/sprites/steve_500x500.png',500,500);
 		game.load.spritesheet('hero2', '/assets/sprites/dcat_500x500.png',500,500);
 		game.load.spritesheet('cardsMoves', '/assets/sprites/cards_110x165.png',110,165);
 		game.load.spritesheet('confirm','assets/sprites/confirm_96x32.png',96,32);
+		game.load.spritesheet('reset','assets/sprites/reset_96x32.png',96,32);
+		game.load.spritesheet('minimize','assets/sprites/minimize_96x32.png',96,32);
+		game.load.spritesheet('maximize','assets/sprites/maximize_96x32.png',96,32);
 		game.load.spritesheet('torch','assets/sprites/torch_13x55.png',13,55);
 		game.load.spritesheet('cardsSkill','assets/sprites/cards_'+_user.hero+'_110x165.png',110,165);
 		game.load.spritesheet('directions','assets/sprites/directions_32x32.png',32,32);
@@ -29,6 +34,7 @@ var GameState = function()
 	var popup;
 	var cards;
 	var opts;
+	var btmMaximize;
 
 	var heros;
 	var hero1;
@@ -44,6 +50,7 @@ var GameState = function()
 
 	function create()
 	{
+
 		background = game.add.sprite(game.world.centerX, game.world.centerY, 'background');
 		background.anchor.set(0.5);
 
@@ -77,10 +84,10 @@ var GameState = function()
 
 		createPopup();
 
-		openPopup();
+		game.time.events.add(Phaser.Timer.SECOND * 3, openPopup, this);
 
-		//audio = game.add.audio('BGMGame');
-		//audio.play('',0,1,true);
+		audio = game.add.audio('BGMGame');
+		audio.play('',0,1,true);
 		
 	}
 
@@ -106,13 +113,12 @@ var GameState = function()
 
 	function openPopup()
 	{
-		opts.setAllChildren('selected',false);
 		game.add.tween(popup.scale).to({x:1,y:1},Phaser.Timer.SECOND * 1,Phaser.Easing.Elastic.Out, true);
 	}
 
 	function createHud()
 	{
-		lifeBar1 = game.add.sprite(20 , 20, 'life');
+		lifeBar1 = game.add.sprite(65 , 20, 'life');
 		lifeBar1.anchor.set(0,0.5);
 		life1 = 100;
 
@@ -122,7 +128,7 @@ var GameState = function()
 
     	lifeBar1.crop(cropRect);
 
-    	lifeBar2 = game.add.sprite(game.world.width - 20 ,20, 'life');
+    	lifeBar2 = game.add.sprite(game.world.width - 65 ,20, 'life');
 		lifeBar2.anchor.set(1,0.5);
 		life2 = 100;
 
@@ -214,10 +220,25 @@ var GameState = function()
 		cards.getChildAt(6).move = {type : 'skill', direction : 'right', name : _user.hero, skill : 2};
 		cards.getChildAt(7).move = {type : 'skill', direction : 'right', name : _user.hero, skill : 3};
 
-		confirm = game.add.button(w-50, h-50, 'confirm', confirm, this, 0, 1, 2);
-		confirm.anchor.set(0.5);
+		btmConfirm = game.add.button(w-50, h-20, 'confirm', confirm, this, 0, 1, 2);
+		btmConfirm.anchor.set(0.5);
 
-		popup.addChild(confirm);
+		popup.addChild(btmConfirm);
+
+		btmReset = game.add.button(w-50, h-50, 'reset', reset, this, 0, 1, 2);
+		btmReset.anchor.set(0.5);
+
+		popup.addChild(btmReset);
+
+		btmMinimize = game.add.button(-w+50,h-50, 'minimize', minimize, this, 0, 1, 2);
+		btmMinimize.anchor.set(0.5);
+
+		popup.addChild(btmMinimize);
+
+		btmMaximize = game.add.button(game.world.centerX, game.world.height - 50,'maximize', maximize, this, 0, 1, 2);
+		btmMaximize.anchor.set(0.5);
+
+		btmMaximize.visible = false;
 
 		popup.addChild(arrows);
 	
@@ -253,13 +274,38 @@ var GameState = function()
 		popup.scale.set(0);
 	}
 
+	function maximize()
+	{
+		btmMaximize.visible = false;
+		game.add.tween(popup.scale).to({x:1,y:1},Phaser.Timer.SECOND * 1,Phaser.Easing.Elastic.Out, true);
+	}
+
+	function minimize()
+	{
+		game.add.tween(popup.scale).to({x:0,y:0},Phaser.Timer.SECOND * 0.1,Phaser.Easing.Linear.None, true);
+		btmMaximize.visible = true;
+	}
+
+	function reset()
+	{
+		opts.setAllChildren('selected',false);
+		for(i = 0; i < cards.length; i++)
+			{
+				card = cards.getChildAt(i);
+				card.x = card.origin.x;
+				card.y = card.origin.y;
+				card.inputEnabled = true;
+				card.scale.set(1);
+			}
+	}
+
 	function confirm()
 	{
 		if(opts.getChildAt(2).selected)
 		{
 			popup.scale.set(0);
 			isPlay1Ready = true;
-
+			opts.setAllChildren('selected',false);
 			for(i = 0; i < cards.length; i++)
 			{
 				card = cards.getChildAt(i);
@@ -376,6 +422,12 @@ var GameState = function()
 		sprite.animations.add('damage',[0,2,0,2,0,2,0,2,0],10,false);
 		sprite.animations.play('idle');
 		hero2 = {x:3, y:4, sprite};
+
+		avatar1 = game.add.sprite(32,32,'avatar1');
+		avatar1.anchor.set(0.5);
+
+		avatar2 = game.add.sprite(game.world.width-32,32,'avatar2');
+		avatar2.anchor.set(0.5);
 
 		if(_user.turn == 2)
 		{

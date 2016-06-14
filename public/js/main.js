@@ -16,6 +16,8 @@ function preload()
 
 function create()
 {
+	this.stage.disableVisibilityChange = true;
+
 	game.state.add('MenuState', MenuState);
 	game.state.add('LoadState', LoadState);
 	game.state.add('GameState', GameState);
