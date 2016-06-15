@@ -25,7 +25,7 @@ var MenuState = function()
 	function start()
 	{
 		audio.stop();
-		game.state.start('LoadState');
+		game.state.start('PlayerPrefsState');
 	}
 
 	return {preload: preload, create:create, update:update};
