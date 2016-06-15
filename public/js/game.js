@@ -9,6 +9,8 @@ var GameState = function()
 		game.load.image('life', '/assets/images/life.png');
 		game.load.image('avatar1', '/assets/images/avatar_steve.png');
 		game.load.image('avatar2', '/assets/images/avatar_dcat.png');
+		game.load.image('win', '/assets/images/win.png');
+		game.load.image('lose', '/assets/images/lose.png');
 		game.load.spritesheet('tile', '/assets/sprites/tile_128x64.png', 128, 64);
 		game.load.spritesheet('hero1', '/assets/sprites/steve_500x500.png',500,500);
 		game.load.spritesheet('hero2', '/assets/sprites/dcat_500x500.png',500,500);
@@ -86,8 +88,8 @@ var GameState = function()
 
 		game.time.events.add(Phaser.Timer.SECOND * 3, openPopup, this);
 
-		audio = game.add.audio('BGMGame');
-		audio.play('',0,1,true);
+		//audio = game.add.audio('BGMGame');
+		//audio.play('',0,1,true);
 		
 	}
 
@@ -572,12 +574,25 @@ var GameState = function()
 					}
 					hero.sprite.animations.play('skill');
 					if(life1 == 0 || life2 == 0)
-						0;
+						gameOver();
 					else
 						game.time.events.add(Phaser.Timer.SECOND * 3, executionMoves, this);
 				break;
 			}
 		}
+	}
+
+	function gameOver()
+	{
+		var img;
+		if(life1 == 0)
+			img = game.add.sprite(game.world.centerX,-100,'lose');
+		else
+			img = game.add.sprite(game.world.centerX,-100,'win');
+
+		img.anchor.set(0.5);
+
+		game.add.tween(img).to({y:game.world.centerY}, Phaser.Timer.SECOND * 5, Phaser.Easing.Bounce.Out, true);
 	}
 
 	function damageHero(hero, obj, dmg)
