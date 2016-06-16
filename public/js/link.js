@@ -12,10 +12,10 @@ var _link = (function()
 		room = data.room;
 		if(data.player != socket.id)
 		{
-			ready = true;
 			data.player = socket.id;
 			_user.turn = 1;
-			_user.hero = 'steve';
+			data.class = _user.hero;
+			data.turn = 1;
 			socket.emit('start game',data);
 		}
 
@@ -23,9 +23,15 @@ var _link = (function()
 
 	socket.on('start game', function(data)
 	{
-		_user.turn = 2;
-		_user.hero = 'dcat';
-		room = data.room
+		_user.enemy = data.class;
+		room = data.room;
+		if(data.turn == 1)
+			{
+				_user.turn = 2;
+				data.class = _user.hero;
+				data.turn = 2;
+				socket.emit('start game',data);
+			}
 		ready = true;
 	});
 

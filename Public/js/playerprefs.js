@@ -50,7 +50,7 @@ var PlayerPrefsState = function()
 
 	function fight()
 	{
-		game.state.start('GameState');
+		game.state.start('LoadState');
 	}
 
 	function update()

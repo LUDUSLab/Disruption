@@ -7,13 +7,13 @@ var GameState = function()
 		game.load.image('popup', '/assets/images/popup.png');
 		game.load.image('opt', '/assets/images/opt.png');
 		game.load.image('life', '/assets/images/life.png');
-		game.load.image('avatar1', '/assets/images/avatar_steve.png');
-		game.load.image('avatar2', '/assets/images/avatar_dcat.png');
+		game.load.image('avatar1', '/assets/images/avatar_'+_user.hero+'.png');
+		game.load.image('avatar2', '/assets/images/avatar_'+_user.enemy+'.png');
 		game.load.image('win', '/assets/images/win.png');
 		game.load.image('lose', '/assets/images/lose.png');
 		game.load.spritesheet('tile', '/assets/sprites/tile_128x64.png', 128, 64);
-		game.load.spritesheet('hero1', '/assets/sprites/steve_500x500.png',500,500);
-		game.load.spritesheet('hero2', '/assets/sprites/dcat_500x500.png',500,500);
+		game.load.spritesheet('hero1', '/assets/sprites/'+_user.hero+'_500x500.png',500,500);
+		game.load.spritesheet('hero2', '/assets/sprites/'+_user.enemy+'_500x500.png',500,500);
 		game.load.spritesheet('cardsMoves', '/assets/sprites/cards_110x165.png',110,165);
 		game.load.spritesheet('confirm','assets/sprites/confirm_96x32.png',96,32);
 		game.load.spritesheet('reset','assets/sprites/reset_96x32.png',96,32);
@@ -433,9 +433,24 @@ var GameState = function()
 
 		if(_user.turn == 2)
 		{
-			aux = hero1;
-			hero1 = hero2;
-			hero2 = aux
+			hero1.x = 3;
+			hero1.y = 4;
+			hero1.sprite.x = tiles[2][3].x;
+			hero1.sprite.y = tiles[2][3].y;
+
+			hero2.x = 2;
+			hero2.y = 1;
+			hero2.sprite.x = tiles[1][0].x;
+			hero2.sprite.y = tiles[1][0].y;
+
+			aux = avatar1.x;
+			avatar1.x = avatar2.x;
+			avatar2.x = aux;
+
+			aux = avatar1.y;
+			avatar1.y = avatar2.y;
+			avatar2.y = aux;
+
 		}
 
 		heros = {hero1,hero2};
