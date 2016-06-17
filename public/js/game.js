@@ -151,6 +151,8 @@ var GameState = function()
 		lifeBar1.anchor.set(0,0.5);
 		life1 = 100;
 		
+		playerName1 = game.add.text(64, 30, _user.name, style);
+		playerName1.anchor.set(0)
 
 		cropRect = new Phaser.Rectangle(0, 0, 0, lifeBar1.height);
 
@@ -164,6 +166,9 @@ var GameState = function()
 		lifeBar2.anchor.set(1,0.5);
 		life2 = 100;
 		
+		playerName2 = game.add.text(game.world.width - 64, 30, _user.enemyName, style);
+		playerName2.anchor.set(1, 0);
+
 		cropRect = new Phaser.Rectangle(0, 0, 0, lifeBar2.height);
 
 		game.add.tween(cropRect).to( { width: lifeBar2.width }, Phaser.Timer.SECOND * 3,  Phaser.Easing.Linear.None, true);

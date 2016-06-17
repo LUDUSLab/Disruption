@@ -2,6 +2,7 @@ var _user = (function ()
 {
 	var name  = 'Player';
 	var hero  = 'steve';
+	var enemyName = 'Enemy';
 	var enemy = 'steve';
 	var turn  = 1;
 

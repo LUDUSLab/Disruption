@@ -15,6 +15,9 @@ var _link = (function()
 			data.player = socket.id;
 			_user.turn = 1;
 			data.class = _user.hero;
+			//<!--me
+				data.enemyName = _user.name;
+			//-->
 			data.turn = 1;
 			socket.emit('start game',data);
 		}
@@ -24,11 +27,18 @@ var _link = (function()
 	socket.on('start game', function(data)
 	{
 		_user.enemy = data.class;
+		//<!--me
+			_user.enemyName = data.enemyName;
+		//-->
 		room = data.room;
 		if(data.turn == 1)
 			{
 				_user.turn = 2;
 				data.class = _user.hero;
+				//<!--me
+					data.enemyName = _user.name;
+					//data.enemyName = data.enemyName;
+				//-->	
 				data.turn = 2;
 				socket.emit('start game',data);
 			}
