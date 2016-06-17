@@ -44,7 +44,7 @@ var PlayerPrefsState = function()
 		selectedHero = game.add.sprite(game.world.centerX, game.world.centerY, 'spriteSteve');
 		selectedHero.anchor.set(0.5);
 
-		fightButton = game.add.button(game.world.centerX, 525, 'fight', fight, this, 0, 1, 2);
+		fightButton = game.add.button(game.world.centerX, 525, 'fight', fight, this, 1, 0, 2);
 		fightButton.anchor.set(0.5);
 	}
 

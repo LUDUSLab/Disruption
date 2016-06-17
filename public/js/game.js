@@ -13,6 +13,8 @@ var GameState = function()
 		game.load.image('win', '/assets/images/win.png');
 		game.load.image('lose', '/assets/images/lose.png');
 		game.load.image('you', '/assets/images/you.png');
+		//me
+		
 		game.load.spritesheet('tile', '/assets/sprites/tile_128x64.png', 128, 64);
 		game.load.spritesheet('hero1', '/assets/sprites/'+_user.hero+'_500x500.png',500,500);
 		game.load.spritesheet('hero2', '/assets/sprites/'+_user.enemy+'_500x500.png',500,500);
@@ -273,22 +275,22 @@ var GameState = function()
 		cards.getChildAt(6).move = {type : 'skill', direction : 'right', name : _user.hero, skill : 2};
 		cards.getChildAt(7).move = {type : 'skill', direction : 'right', name : _user.hero, skill : 3};
 
-		btmConfirm = game.add.button(w-50, h-20, 'confirm', confirm, this, 0, 1, 2);
+		btmConfirm = game.add.button(w-50, h-20, 'confirm', confirm, this, 1, 0, 2);
 		btmConfirm.anchor.set(0.5);
 
 		popup.addChild(btmConfirm);
 
-		btmReset = game.add.button(w-50, h-50, 'reset', reset, this, 0, 1, 2);
+		btmReset = game.add.button(w-50, h-50, 'reset', reset, this, 1, 0, 2);
 		btmReset.anchor.set(0.5);
 
 		popup.addChild(btmReset);
 
-		btmMinimize = game.add.button(-w+50,h-50, 'minimize', minimize, this, 0, 1, 2);
+		btmMinimize = game.add.button(-w+50,h-50, 'minimize', minimize, this, 1, 0, 2);
 		btmMinimize.anchor.set(0.5);
 
 		popup.addChild(btmMinimize);
 
-		btmMaximize = game.add.button(game.world.centerX, game.world.height - 50,'maximize', maximize, this, 0, 1, 2);
+		btmMaximize = game.add.button(game.world.centerX, game.world.height - 18,'maximize', maximize, this, 1, 0, 2);
 		btmMaximize.anchor.set(0.5);
 
 		btmMaximize.visible = false;
@@ -505,6 +507,7 @@ var GameState = function()
 		}
 
 		you = game.add.sprite(0,100,'you');
+
 		you.anchor.set(0.5);
 
 		hero1.sprite.addChild(you);

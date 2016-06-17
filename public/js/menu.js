@@ -11,9 +11,13 @@ var MenuState = function()
 	var text;
 	function create()
 	{
-		button = game.add.button(game.world.width * 0.5, game.world.height * 0.75, 'start', start, this, 0, 1, 2);
+		button = game.add.button(game.world.width * 0.5, game.world.height * 0.75, 'start', start, this, 1, 0, 2);
 		button.inputEnabled = true;
 		button.anchor.set(0.5);
+
+		splashImage = game.add.sprite(game.world.centerX, game.world.centerY - 50, 'splash');
+		splashImage.anchor.set(0.5);
+		//splashImage.scale.set(0.5);
 
 		style = { font: "20px impact", fill: "#4682B4", align: "center" };
 		text = game.add.text(game.world.centerX, game.world.height - 50, "0", style);
