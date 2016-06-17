@@ -7,10 +7,12 @@ var GameState = function()
 		game.load.image('popup', '/assets/images/popup.png');
 		game.load.image('opt', '/assets/images/opt.png');
 		game.load.image('life', '/assets/images/life.png');
+		game.load.image('damage', '/assets/images/damage.png');
 		game.load.image('avatar1', '/assets/images/avatar_'+_user.hero+'.png');
 		game.load.image('avatar2', '/assets/images/avatar_'+_user.enemy+'.png');
 		game.load.image('win', '/assets/images/win.png');
 		game.load.image('lose', '/assets/images/lose.png');
+		game.load.image('you', '/assets/images/you.png');
 		game.load.spritesheet('tile', '/assets/sprites/tile_128x64.png', 128, 64);
 		game.load.spritesheet('hero1', '/assets/sprites/'+_user.hero+'_500x500.png',500,500);
 		game.load.spritesheet('hero2', '/assets/sprites/'+_user.enemy+'_500x500.png',500,500);
@@ -23,10 +25,19 @@ var GameState = function()
 		game.load.spritesheet('cardsSkill','assets/sprites/cards_'+_user.hero+'_110x165.png',110,165);
 		game.load.spritesheet('directions','assets/sprites/directions_32x32.png',32,32);
 		game.load.audio('BGMGame', 'assets/audios/BGM/_vgti by _jm.mp3');
+		game.load.audio('SFXattack', 'assets/audios/SFX/attack.wav');
+		game.load.audio('SFXhurt', 'assets/audios/SFX/hurt.wav');
+		game.load.audio('SFXwalk', 'assets/audios/SFX/walk.wav');
 	}
 
 	var lifeBar1;
 	var lifeBar2;
+
+	var txtRound;
+	var round;
+
+	var txtLife1;
+	var txtLife2;
 
 	var life1;
 	var life2;
@@ -49,6 +60,10 @@ var GameState = function()
 	var moves;
 
 	var arrows;
+
+	var sfxAttack;
+	var sfxHurt;
+	var sfxWalk;
 
 	function create()
 	{
@@ -78,6 +93,14 @@ var GameState = function()
 		moves1 	= [];
 		moves2	= [];
 		moves 	= [];
+
+		//audio
+
+		sfxAttack = game.add.audio('SFXattack');
+		sfxHurt = game.add.audio('SFXhurt');
+		sfxWalk = game.add.audio('SFXwalk');
+
+		//
 
 		createHud();
 
@@ -120,9 +143,14 @@ var GameState = function()
 
 	function createHud()
 	{
-		lifeBar1 = game.add.sprite(65 , 20, 'life');
+		style = { font: "18px impact", fill: "#00CC66", align: "center" };
+
+		damage = game.add.sprite(65, 20, 'damage');
+		damage.anchor.set(0,0.5);
+		lifeBar1 = game.add.sprite(65, 20, 'life');
 		lifeBar1.anchor.set(0,0.5);
 		life1 = 100;
+		
 
 		cropRect = new Phaser.Rectangle(0, 0, 0, lifeBar1.height);
 
@@ -130,15 +158,25 @@ var GameState = function()
 
     	lifeBar1.crop(cropRect);
 
+    	damage = game.add.sprite(game.world.width - 65, 20, 'damage');
+		damage.anchor.set(1,0.5);
     	lifeBar2 = game.add.sprite(game.world.width - 65 ,20, 'life');
 		lifeBar2.anchor.set(1,0.5);
 		life2 = 100;
-
+		
 		cropRect = new Phaser.Rectangle(0, 0, 0, lifeBar2.height);
 
 		game.add.tween(cropRect).to( { width: lifeBar2.width }, Phaser.Timer.SECOND * 3,  Phaser.Easing.Linear.None, true);
 
     	lifeBar2.crop(cropRect);
+
+    	txtLife1 = game.add.text(game.world.centerX-100, 20, "0", style);
+    	txtLife1.anchor.set(0.5);
+    	txtLife1.text = '100/'+life1;
+
+    	txtLife2 = game.add.text(game.world.centerX+100, 20, "0", style);
+    	txtLife2.anchor.set(0.5);
+    	txtLife2.text = '100/'+life2;
 
     	if(_user.turn == 2)
     	{
@@ -146,10 +184,16 @@ var GameState = function()
     		lifeBar1 = lifeBar2;
     		lifeBar2 = aux;
 
-    		aux = life1;
-    		life1 = life2;
-    		life2 = aux;
+    		aux = txtLife1;
+    		txtLife1 = txtLife2;
+    		txtLife2 = aux;
     	}
+
+		style.font = "20px impact";    	
+		txtRound = game.add.text(game.world.centerX, 20, "", style);
+		txtRound.anchor.set(0.5);
+		round = 1;
+		txtRound.text = 'Round '+round;
 	}
 
 	function createPopup()
@@ -453,6 +497,11 @@ var GameState = function()
 
 		}
 
+		you = game.add.sprite(0,100,'you');
+		you.anchor.set(0.5);
+
+		hero1.sprite.addChild(you);
+
 		heros = {hero1,hero2};
 	}
 
@@ -496,6 +545,8 @@ var GameState = function()
 		if(moves.length == 0)
 		{
 			openPopup();
+			round++;
+			txtRound.text = 'Round '+round;
 		}
 		else
 		{
@@ -535,7 +586,9 @@ var GameState = function()
 
 					game.add.tween(hero.sprite).to({z : x}, Phaser.Timer.SECOND * 1, Phaser.Easing.Linear.None,true);
 
-					tween = game.add.tween(hero.sprite).to({x : tile.x, y : tile.y},Phaser.Timer.SECOND * 1,Phaser.Easing.Linear.None,true);
+					sfxWalk.play();
+
+					tween = game.add.tween(hero.sprite).to({x : tile.x, y : tile.y},Phaser.Timer.SECOND * 2,Phaser.Easing.Linear.None,true);
 					tween.onComplete.add(executionMoves, this);
 				break;
 				case 'skill' :
@@ -577,6 +630,7 @@ var GameState = function()
 						{
 							life1 = life1 - _heros[move.name].skills[move.skill].damage;
 							if(life1 < 0) life1 = 0;
+							txtLife1.text = '100/'+life1;
 							damageHero('hero1', lifeBar1, life1);
 						}
 
@@ -584,9 +638,11 @@ var GameState = function()
 						{
 							life2 = life2 - _heros[move.name].skills[move.skill].damage;
 							if(life2 < 0) life2 = 0;
+							txtLife2.text = '100/'+life2;
 							damageHero('hero2', lifeBar2, life2);
 						}
 					}
+					sfxAttack.play();
 					hero.sprite.animations.play('skill');
 					if(life1 == 0 || life2 == 0)
 						gameOver();
@@ -618,6 +674,7 @@ var GameState = function()
 		game.add.tween(cropRect).to( { width: obj.width * (dmg/100) }, Phaser.Timer.SECOND * 1,  Phaser.Easing.Linear.None, true);
 
 		obj.crop(cropRect);
+		sfxHurt.play();
 	}
 
 	return {preload: preload, create: create, update: update};
